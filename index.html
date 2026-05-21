@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador Harmônico</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Literata:ital,wght@0,400;0,600;1,400&display=swap');
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Literata', Georgia, serif;
+      background-color: #e8e0d4;
+      background-image:
+        radial-gradient(circle at 20% 50%, rgba(18,140,126,0.06) 0%, transparent 60%),
+        radial-gradient(circle at 80% 20%, rgba(7,94,84,0.08) 0%, transparent 50%);
+      color: #2a2a2a;
+      margin: 0;
+      padding: 30px 20px 60px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-wrapper {
+      width: 60%;
+      max-width: 780px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .panel {
+      background: #fdfaf6;
+      border: 1px solid rgba(0,0,0,0.10);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      padding: 24px 28px;
+    }
+    .panel:first-child { border-radius: 14px 14px 0 0; border-bottom: none; }
+    .panel:last-child  { border-radius: 0 0 14px 14px; }
+    .panel + .panel    { border-top: 1px solid rgba(0,0,0,0.07); }
+
+    h2 {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: #128c7e; margin: 0 0 16px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(18,140,126,0.2);
+    }
+
+    label {
+      display: block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.10em; text-transform: uppercase;
+      color: #075e54; margin-bottom: 10px;
+    }
+
+    .nota-destaque {
+      color: #128c7e; font-size: 1.15em; font-weight: 700;
+      text-transform: none; letter-spacing: 0;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none; width: 100%; height: 4px;
+      background: linear-gradient(to right, #128c7e 0%, #128c7e var(--val,0%), #d0cdc8 var(--val,0%));
+      border-radius: 2px; cursor: pointer; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 16px; height: 16px;
+      background: #128c7e; border-radius: 50%;
+      border: 2px solid #fdfaf6; box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 16px; height: 16px; background: #128c7e;
+      border-radius: 50%; border: 2px solid #fdfaf6;
+    }
+
+    select {
+      width: 100%; padding: 10px 14px; border-radius: 8px;
+      border: 1px solid #d0cdc8;
+      font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+      background: #f4f0eb; color: #2a2a2a; cursor: pointer; outline: none;
+    }
+    select:focus { border-color: #128c7e; }
+
+    .result-box {
+      background: #edf7f5; border: 1px solid rgba(18,140,126,0.2);
+      padding: 14px 16px; border-radius: 8px;
+      font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+      line-height: 1.7; white-space: pre-wrap; color: #1a3a37;
+    }
+    .result-box-escala, 
+    .acidentes-info {
+      background: #edf7f5; border: 1px solid rgba(18,140,126,0.2);
+      padding: 4px 16px; border-radius: 8px;
+      font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+      line-height: 1.6; white-space: pre-wrap; color: #1a3a37;
+      text-align: center;
+    }
+    .acidentes-info {
+      margin-top: 16px;
+    }
+    .tabela-enarmonicas {
+      width: 100%; border-collapse: collapse;
+      font-size: 11px; font-family: 'IBM Plex Mono', monospace;
+    }
+    .tabela-enarmonicas th, .tabela-enarmonicas td {
+      border: 1px solid #ddd; padding: 3px 2px; text-align: center;
+    }
+    .tabela-enarmonicas th { background: #e8f5f3; color: #075e54; font-weight: 700; }
+    .nota-enarmonica { display: inline-block; padding: 1px 4px; margin: 0 1px; border-radius: 3px; }
+
+    .semicircle-section {
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    #key-wheel-svg { display: block; overflow: visible; }
+
+    .key-slider-wrapper {
+      width: 100%; max-width: 300px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .key-slider-label {
+      font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+      font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #075e54; text-align: center;
+    }
+    .key-note-names {
+      display: flex; justify-content: space-between; width: 100%;
+      font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: #888; padding: 0 2px;
+    }
+
+    .disc-section {
+      display: flex; flex-direction: column; align-items: center;
+      background: #f4f0eb; border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 10px; padding: 18px; gap: 12px;
+    }
+
+    #container-intervalos {
+      margin-bottom: 16px;;
+      display: flex; justify-content: center; gap: 6px;
+      font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+      color: #075e54; font-weight: 700; flex-wrap: wrap;
+    }
+    #container-intervalos span {
+      padding: 2px 6px; background: #ddf2ef; border-radius: 4px;
+    }
+
+    .control-group { margin-bottom: 0; width: 300px; }
+
+    .chord-section {
+      display: flex; flex-direction: column; align-items: center;
+      background: #f4f0eb; border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 10px; padding: 18px; gap: 12px;
+    }
+
+    .section-gap { display: flex; flex-direction: column; gap: 16px; }
+
+    @media (max-width: 768px) {
+      body { padding: 0; }
+      .app-wrapper { width: 100%; max-width: 100%; }
+      .panel:first-child { border-radius: 0; }
+      .panel:last-child  { border-radius: 0; }
+    }
+
+    .info-extra-section {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      background: #edf7f5; border: 1px solid rgba(18,140,126,0.2);
+      padding: 12px 16px; border-radius: 8px; width: 100%;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .info-extra-title {
+      font-size: 10px; font-weight: 600; color: #075e54;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .info-extra-tags {
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    }
+    .tag-enarmonica {
+      display: flex; align-items: center; gap: 6px;
+      background: #ffffff; border: 1px solid rgba(18,140,126,0.3);
+      color: #128c7e; padding: 4px 10px; border-radius: 12px;
+      font-size: 12px; font-weight: 700;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .tag-cifra {
+      background: #ddf2ef; color: #075e54;
+      padding: 2px 6px; border-radius: 4px;
+      font-size: 10px; font-weight: 600;
+    }
+    .key-wheel-container{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      overflow:hidden;
+      position:relative;
+    }
+
+    #key-wheel-svg{
+      flex-shrink:0;
+    }
+    .tonica-container{
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background: #e8e0d4;
+    }
+
+    .tonica-container .disc-section {
+      border-radius: 0;
+    }
+
+    small {
+      display: block;
+      font-family: 'IBM Plex Mono', monospace;
+        font-size:10px;
+        text-transform:uppercase;
+        letter-spacing:.08em;
+        color:#888;
+        font-weight:700;
+        text-align:center;
+      
+    }
+    .by {
+      display: block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: #ccc;
+      margin: 20px 0;
+      text-align: right;
+    }
+    .big {
+      font-size: 16px;
+      letter-spacing: -2px;
+    }
+
+    /* CSS DO SWITCHER */
+    .switch-container {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 4px; margin-bottom: 8px; width: 100%;
+    }
+    .switch {
+      position: relative; display: inline-block; width: 36px; height: 20px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch-slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #d0cdc8; transition: .4s; border-radius: 20px;
+    }
+    .switch-slider:before {
+      position: absolute; content: ""; height: 14px; width: 14px;
+      left: 3px; bottom: 3px; background-color: white;
+      transition: .4s; border-radius: 50%;
+    }
+    input:checked + .switch-slider { background-color: #128c7e; }
+    input:checked + .switch-slider:before { transform: translateX(16px); }
+    .switch-label {
+      font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600;
+      color: #075e54; text-transform: uppercase; transition: opacity 0.3s;
+    }
+    #chord-wheel, #chord-wheel circle {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body>
+<div class="app-wrapper">
+<div class="tonica-container">
+    <div class="disc-section">
+            <div class="key-slider-wrapper">
+              <label for="notaSlider" class="key-slider-label">Tônica: <span id="notaLabel" class="nota-destaque">Do</span></label>
+              <input type="range" id="notaSlider" min="0" max="11" value="0" style="--val:0%;">
+              
+              <div class="key-note-names">
+                <span>Do</span><span>•</span><span>Re</span><span>•</span><span>Mi</span><span>Fa</span><span>•</span><span>Sol</span><span>•</span><span>La</span><span>•</span><span>Si</span>
+              </div>
+            </div>
+  </div></div>
+  
+       <small style="margin: 10px 0;">A Tônica define o 'Tom' ou a 'Tonalidade' que é a nota de referência</small>
+<div class="panel">
+    <h2>Notas</h2>
+    <div class="disc-section">
+            
+            <h3 class="key-slider-label">Cifra: <span id="notaLabel2" class="nota-destaque">C</span></h3>
+            <div id="nota-info-extra" class="info-extra-section" style="display: none;"></div>
+        </div><small style="margin-top: 16px;">Existem 12 notas musicais<br />7 notas naturais e 5 acidentes</small>
+ 
+  </div>
+
+<div class="panel">
+    <h2>Acidentes</h2>
+    <div class="disc-section" style="overflow: hidden; height: 190px;">
+    <div class="semicircle-section">
+      <div class="key-wheel-container">
+        <svg id="key-wheel-svg" width="400" height="240" viewBox="0 0 400 240"
+            style="display:block; overflow:visible; margin: 0 auto;">
+          <defs>
+            <clipPath id="semi-clip">
+              <rect x="0" y="0" width="400" height="210"/>
+            </clipPath>
+            <mask id="arc-mask">
+              <rect x="0" y="0" width="400" height="240" fill="white"/>
+              <circle id="win-mask-left"  cx="125" cy="80" r="35" fill="black"/>
+              <circle id="win-mask-mid"   cx="200" cy="60" r="35" fill="black"/>
+              <circle id="win-mask-right" cx="275" cy="80" r="35" fill="black"/>
+            </mask>
+          </defs>
+
+          <g clip-path="url(#semi-clip)">
+            <g id="key-disc-group"
+              style="transition: transform 2s cubic-bezier(0.4,0,0.2,1);
+                      transform-origin: 200px 210px;">
+              <circle cx="200" cy="210" r="185" fill="#f4f0eb" fill-opacity="0.55"/>
+              <g id="key-disc-notes"
+                font-family="'IBM Plex Mono',monospace" font-size="13"
+                font-weight="700" text-anchor="middle" dominant-baseline="central"
+                fill="#1a1a1a">
+              </g>
+            </g>
+          </g>
+
+          <path d="M 10 210 A 190 190 0 0 1 390 210 Z"
+                fill="#c8c8c8" fill-opacity="0.82"
+                mask="url(#arc-mask)"/>
+
+<text id="label-bemol" x="115" y="135" font-family="'IBM Plex Mono',monospace" font-size="12"
+      font-weight="700" text-anchor="middle" fill="#075e54" style="transition: opacity 0.4s ease;">♭ Bemol</text>
+<text x="200" y="115" font-family="'IBM Plex Mono',monospace" font-size="12"
+      font-weight="700" text-anchor="middle" fill="#075e54">Natural</text>
+<text id="label-sustenido" x="285" y="135" font-family="'IBM Plex Mono',monospace" font-size="12"
+      font-weight="700" text-anchor="middle" fill="#075e54" style="transition: opacity 0.4s ease;">♯ Sustenido</text>
+
+        </svg>
+      </div>
+      </div>
+      
+    </div>
+     
+
+    <div class="acidentes-info"><b>Em relação à nota natural:</b><br /><span class="big">♭</span>  está há 1 semi-tom abaixo<br /><span class="big">♯</span>  está há 1 semi-tom acima</div>
+    <small style="margin-top: 16px;"> Há também <span class="big">♯♯</span> duplo-sustenido e <span class="big">♭♭</span> duplo-bemol</small>
+  </div>
+  
+
+  <div class="panel">
+    <h2>Intervalos</h2>
+    <div class="section-gap">
+
+        <div class="disc-section" style="margin-top: 16px;">
+          <svg id="interval-wheel" width="240" height="240" viewBox="0 0 240 240">
+            <defs>
+              <mask id="interval-hole-mask">
+                <circle cx="120" cy="120" r="120" fill="white"/>
+                <circle cx="120" cy="45" r="16" fill="black"/>
+                <g id="interval-mask-rotator" style="transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); transform-origin: 120px 120px;">
+                  <circle cx="120" cy="45" r="16" fill="black"/>
+                </g>
+              </mask>
+            </defs>
+            
+            <g id="interval-notes" font-size="13" font-family="'IBM Plex Mono',monospace"
+               font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#444"></g>
+            
+            <circle cx="120" cy="120" r="107" fill="#b0b0b0" fill-opacity="0.75" mask="url(#interval-hole-mask)"/>
+            
+            <g id="interval-range-circles"></g>
+
+            <circle cx="120" cy="45" r="16" fill="none" stroke="#075e54" stroke-width="2" stroke-dasharray="4 3" opacity="0.8"/>
+
+            <g id="interval-window-group"
+               style="transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); transform-origin: 120px 120px;">
+              <circle cx="120" cy="45" r="16" fill="none" stroke="#128c7e" stroke-width="4"/>
+            </g>
+            <circle cx="120" cy="120" r="4" fill="#222"/>
+          </svg>
+
+      <div class="control-group">
+        <label for="reguaSlider">Distância: <span id="reguaLabel" class="nota-destaque">Uníssono</span></label>
+        <input type="range" id="reguaSlider" min="0" max="12" value="0" style="--val:0%;">
+      </div>
+       <small>T = Tom &nbsp;&nbsp; ST = Semi-tom</small>
+        </div><small style="margin-top: 0px;">Uma oitava é a mesma nota mais aguda e os intervalos continuam em 9ª, 10ª, 11ª, etc.</small>
+    </div>
+  </div>
+
+  
+
+  <div class="panel">
+    <h2>Escalas</h2>
+    <div class="section-gap">
+
+      <div>
+        
+        <div id="resultadoEscala" class="result-box-escala"></div>
+      </div>
+       <small>A escolha do acidente da tônica ♭ ou ♯ visa gerar uma escala com o menor número de acidentes </small>
+      <div class="disc-section">
+        <svg id="music-wheel" width="240" height="240" viewBox="0 0 240 240">
+          <g id="wheel-notes" font-size="13" font-family="'IBM Plex Mono',monospace"
+             font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#444"></g>
+          <defs>
+            <mask id="hole-mask">
+              <circle cx="120" cy="120" r="120" fill="white"/>
+              <g id="mask-holes"></g>
+            </mask>
+          </defs>
+          <g id="rotating-disc"
+             style="transition: transform 2s cubic-bezier(0.4,0,0.2,1); transform-origin: 120px 120px;">
+            <circle cx="120" cy="120" r="107" fill="#b0b0b0" fill-opacity="0.75"
+                    mask="url(#hole-mask)"/>
+            <circle cx="120" cy="45" r="16" fill="none" stroke="#222" stroke-width="4"/>
+            <circle cx="120" cy="120" r="4" fill="#222"/>
+          </g>
+        </svg>
+
+        
+      <div id="container-intervalos"></div>
+
+      <div class="control-group">
+        <label for="escalaSelect">Tipo de Escala:</label>
+        <select id="escalaSelect">
+          <option value="maior">Maior</option>
+          <option value="menor">Menor Natural</option>
+          <option value="menorHarmonica">Menor Harmônica</option>
+          <option value="menorMelodica">Menor Melódica</option>
+        </select>
+      </div>
+
+
+      </div>
+
+       <small>As notas que compõem a melodia e a harmonia de uma música são baseadas em uma escala</small>
+    </div>
+  </div>
+
+
+  <div class="panel">
+    <h2>Acordes</h2>
+    <div class="section-gap">
+      <div class="chord-section">
+       <small>O acorde surge a partir da escala criada</small>
+       
+       <div class="switch-container">
+          <label class="switch">
+            <input type="checkbox" id="chordViewSwitch">
+            <span class="switch-slider"></span>
+          </label>
+          <span class="switch-label" style="position: relative; opacity: 0.5; top: -5px" id="lbl-12notas">Ver 12 Notas</span>
+       </div>
+
+        <svg id="chord-wheel" width="180" height="180" viewBox="0 0 180 180">
+          <g id="chord-notes" font-size="13" font-family="'IBM Plex Mono',monospace"
+             font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#444"></g>
+          <defs>
+            <mask id="chord-hole-mask">
+              <circle id="chord-hole-bg" cx="90" cy="90" r="90" fill="white"/>
+              <g id="chord-mask-holes"></g>
+            </mask>
+          </defs>
+          <g id="chord-rotating-disc"
+             style="transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); transform-origin: 90px 90px;">
+            <circle cx="90" cy="90" r="75" fill="#b0b0b0" fill-opacity="0.75"
+                    mask="url(#chord-hole-mask)"/>
+            <circle cx="90" cy="35" r="16" fill="none" stroke="#222" stroke-width="3"/>
+            <circle cx="90" cy="90" r="4" fill="#222"/>
+          </g>
+        </svg>
+
+        <div class="control-group">
+          <label for="grauSlider">Grau na Escala: <span id="grauLabel" class="nota-destaque">1 (I)</span></label>
+          <input type="range" id="grauSlider" min="1" max="7" value="1" style="--val:0%;">
+        </div>
+        <div class="control-group">
+          <label for="acordeSelect">Tipo do Acorde:</label>
+          <select id="acordeSelect">
+            <option value="triade">Tríade</option>
+            <option value="tetrade">Tétrade</option>
+            <option value="tetrade_e_nona">Tétrade com 9ª</option>
+          </select>
+        </div>
+        <div id="intervalos-detalhe" style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #075e54; margin-top: 8px; text-align: center; line-height: 1.4;">
+        </div>
+      </div>
+      <div >
+          <div id="resultadoAcordeVisual" class="result-box"
+                style="width:100%;text-align:center;font-size:15px;">
+       </div><small style="margin-top: 16px;">O campo harmônico é o conjunto de todos os acordes gerados a partir de uma escala</small>
+        </div>
+
+        <div class="by">
+          by: Leopoldo Rezende
+        </div>
+        </div>
+      </div>
+
+    </div>
+<script>
+// ============================================================
+// DADOS MUSICAIS
+// ============================================================
+const NOTAS = [];
+const naturais = [
+  { nota: ['Do'],  cifra: ['C'],  hz: 261.63 },
+  { nota: ['Re'],  cifra: ['D'],  hz: 293.66 },
+  { nota: ['Mi'],  cifra: ['E'],  hz: 329.63 },
+  { nota: ['Fa'],  cifra: ['F'],  hz: 349.23 },
+  { nota: ['Sol'], cifra: ['G'],  hz: 392.00 },
+  { nota: ['La'],  cifra: ['A'],  hz: 440.00 },
+  { nota: ['Si'],  cifra: ['B'],  hz: 493.88 }
+];
+const acidentes = [
+  { nota: ['Do♯','Re♭'],  cifra: ['C♯','D♭'], hz: 277.18 },
+  { nota: ['Re♯','Mi♭'],  cifra: ['D♯','E♭'], hz: 311.13 },
+  { nota: ['Fa♯','Sol♭'], cifra: ['F♯','G♭'], hz: 369.99 },
+  { nota: ['Sol♯','La♭'], cifra: ['G♯','A♭'], hz: 415.30 },
+  { nota: ['La♯','Si♭'],  cifra: ['A♯','B♭'], hz: 466.16 }
+];
+const enarmonicos = [
+  { nota:'Si♯',   cifra:'B♯',   hz:261.63 }, { nota:'Fa♭',   cifra:'F♭',   hz:329.63 },
+  { nota:'Mi♯',   cifra:'E♯',   hz:349.23 }, { nota:'Do♭',   cifra:'C♭',   hz:493.88 },
+  { nota:'Do♯♯',  cifra:'C♯♯',  hz:293.66 }, { nota:'Re♯♯',  cifra:'D♯♯',  hz:329.63 },
+  { nota:'Mi♯♯',  cifra:'E♯♯',  hz:369.99 }, { nota:'Fa♯♯',  cifra:'F♯♯',  hz:392.00 },
+  { nota:'Sol♯♯', cifra:'G♯♯',  hz:440.00 }, { nota:'La♯♯',  cifra:'A♯♯',  hz:493.88 },
+  { nota:'Si♯♯',  cifra:'B♯♯',  hz:277.18 }, { nota:'Do♭♭',  cifra:'C♭♭',  hz:466.16 },
+  { nota:'Re♭♭',  cifra:'D♭♭',  hz:261.63 }, { nota:'Mi♭♭',  cifra:'E♭♭',  hz:293.66 },
+  { nota:'Fa♭♭',  cifra:'F♭♭',  hz:311.13 }, { nota:'Sol♭♭', cifra:'G♭♭',  hz:349.23 },
+  { nota:'La♭♭',  cifra:'A♭♭',  hz:392.00 }, { nota:'Si♭♭',  cifra:'B♭♭',  hz:440.00 }
+];
+NOTAS.push(...[...naturais,...acidentes].sort((a,b)=>a.hz-b.hz));
+enarmonicos.forEach(e=>{ const t=NOTAS.find(n=>n.hz===e.hz); t&&(t.nota.push(e.nota),t.cifra.push(e.cifra)); });
+
+// ============================================================
+// ESCALAS / ACORDES
+// ============================================================
+const ST=1,T=2,TST=3;
+const ESCALAS={
+  maior:[T,T,ST,T,T,T,ST], menor:[T,ST,T,T,ST,T,T],
+  menorHarmonica:[T,ST,T,T,ST,TST,ST], menorMelodica:[T,ST,T,T,T,T,ST]
+};
+const ACORDES={ triade:[1,3,5], tetrade:[1,3,5,7], tetrade_e_nona:[1,3,5,7,9] };
+
+function gerarEscala(tonica,molde){
+  let pos=NOTAS.findIndex(i=>i.nota.includes(tonica));
+  const esc=[NOTAS[pos]];
+  for(const p of molde){pos=(pos+p)%NOTAS.length;esc.push(NOTAS[pos]);}
+  return esc;
+}
+function gerarCifra(notas){
+  const idx0=NOTAS.findIndex(i=>i.nota.includes(notas[0]));
+  const ivs=notas.map(n=>(NOTAS.findIndex(i=>i.nota.includes(n))-idx0+12)%12);
+  const cb=NOTAS[idx0].cifra[NOTAS[idx0].nota.indexOf(notas[0])];
+  const tri={maior:ivs.includes(4)&&ivs.includes(7),menor:ivs.includes(3)&&ivs.includes(7),
+    dim:ivs.includes(3)&&ivs.includes(6),aum:ivs.includes(4)&&ivs.includes(8)};
+  let s='';
+  if(tri.menor)s='m'; if(tri.dim)s='dim'; if(tri.aum)s='5+';
+  if(ivs.includes(11))s+='7M';
+  else if(ivs.includes(10)){s=tri.dim?'m7(♭5)':s+'7';}
+  else if(ivs.includes(9)&&tri.dim)s='dim7';
+  if(ivs.includes(2))s+='(9)';
+  else if(ivs.includes(1))s+='(♭9)';
+  return `${cb}${s}`;
+}
+function extrairAcorde(esc,molde,grau=1){
+  const notas=molde.map(g=>esc[(grau-1+g-1)%7]);
+  const numRomano = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'][grau - 1];
+  return `<b>Acorde: ${gerarCifra(notas).padEnd(8,'')}</b> <br /> Notas: [${notas.join(', ')}] <br />${numRomano}° grau do Campo Harmônico `;
+}
+function gerarCampoHarmonico(esc){
+  return Array.from({length:7},(_,i)=>{
+    const g=i+1;
+    return `Grau ${g}:\nTríade  : ${extrairAcorde(esc,ACORDES.triade,g)}\nTétrade : ${extrairAcorde(esc,ACORDES.tetrade,g)}\nTétrade9: ${extrairAcorde(esc,ACORDES.tetrade_e_nona,g)}\n`;
+  });
+}
+function leitorDeNotasCorretas(escalaBruta){
+  const nomesBase=escalaBruta[0].nota.slice(0,2);
+  const escalasCorretas=[];
+  for(const nome of nomesBase){
+    let indBase=naturais.findIndex(n=>nome.startsWith(n.nota[0]));
+    const nomeada=escalaBruta.map(som=>{
+      const baseEsp=naturais[indBase].nota[0];
+      const correto=som.nota.find(n=>n.startsWith(baseEsp));
+      indBase=(indBase+1)%naturais.length;
+      return correto||som.nota[0];
+    });
+    escalasCorretas.push(nomeada);
+    if(!nome.includes('♯')&&!nome.includes('♭'))break;
+  }
+  escalasCorretas.sort((a,b)=>{
+    const da=a.some(n=>n&&n.includes('♯♯')),db=b.some(n=>n&&n.includes('♯♯'));
+    return da&&!db?1:!da&&db?-1:0;
+  });
+  return escalasCorretas;
+}
+
+const NOMES_INTERVALOS_TEORICOS = {
+  1: "Tônica",
+  2: "Segunda", 
+  3: "Terça",
+  4: "Quarta",
+  5: "Quinta",
+  6: "Sexta",
+  7: "Sétima",
+  9: "Nona"
+};
+
+// ============================================================
+// CRIAR OS ELEMENTOS DE TEXTO DOS DISCOS (Escala, Acordes, Intervalos)
+// ============================================================
+const wheelNotes=document.getElementById('wheel-notes');
+for(let i=0;i<12;i++){
+  const a=(i*30-90)*(Math.PI/180);
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('x',120+75*Math.cos(a)); t.setAttribute('y',120+75*Math.sin(a));
+  t.setAttribute('id',`note-text-${i}`); wheelNotes.appendChild(t);
+}
+
+const intervalNotes=document.getElementById('interval-notes');
+const intervalRangeCircles=document.getElementById('interval-range-circles');
+for(let i=0;i<12;i++){
+  const a=(i*30-90)*(Math.PI/180);
+  
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('x',120+75*Math.cos(a)); t.setAttribute('y',120+75*Math.sin(a));
+  t.setAttribute('id',`interval-text-${i}`); intervalNotes.appendChild(t);
+  
+  const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  c.setAttribute('cx',120+75*Math.cos(a)); c.setAttribute('cy',120+75*Math.sin(a));
+  c.setAttribute('r',14); c.setAttribute('fill','#128c7e');
+  c.setAttribute('opacity','0'); c.style.transition='opacity 0.3s ease';
+  c.setAttribute('id',`interval-range-${i}`);
+  intervalRangeCircles.appendChild(c);
+}
+
+const chordNotes=document.getElementById('chord-notes');
+for(let i=0;i<12;i++){ 
+  // Cria o círculo de borda primeiro (para ficar atrás do texto)
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  bg.setAttribute('id', `chord-bg-${i}`);
+  bg.setAttribute('fill', 'none'); 
+  bg.setAttribute('stroke', 'black'); // Contorno preto
+  bg.setAttribute('stroke-width', '2'); // Espessura da borda
+  bg.setAttribute('opacity', '0'); // Começa invisível
+  bg.style.transition = 'all 0.4s ease';
+  chordNotes.appendChild(bg);
+
+  // Depois o texto
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('id',`chord-text-${i}`); 
+  t.style.transition = 'all 0.4s ease';
+  chordNotes.appendChild(t);
+}
+
+// ============================================================
+// ATUALIZAR DISCO 12 NOTAS (ESCALA)
+// ============================================================
+function atualizarDiscoVisual(indiceTonica,molde,notasNomeadas){
+  const mh=document.getElementById('mask-holes'); mh.innerHTML='';
+  let sem=0; const pos=[0];
+  for(let i=0;i<molde.length-1;i++){sem+=molde[i];pos.push(sem);}
+  pos.forEach(p=>{
+    const a=(p*30-90)*(Math.PI/180);
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',120+75*Math.cos(a)); c.setAttribute('cy',120+75*Math.sin(a));
+    c.setAttribute('r',16); c.setAttribute('fill','black'); mh.appendChild(c);
+  });
+  const arr=NOTAS.map(n=>n.nota[0]);
+  let posAbs=indiceTonica;
+  for(let i=0;i<7;i++){arr[posAbs%12]=notasNomeadas[i];posAbs+=molde[i];}
+  for(let i=0;i<12;i++) document.getElementById(`note-text-${i}`).textContent=arr[i];
+  document.getElementById('rotating-disc').style.transform=`rotate(${indiceTonica*30}deg)`;
+}
+
+// ============================================================
+// ATUALIZAR DISCO DE ACORDES (7 ou 12 Notas)
+// ============================================================
+const sliderGrau=document.getElementById('grauSlider');
+const selectAcorde=document.getElementById('acordeSelect');
+const labelGrau=document.getElementById('grauLabel');
+const divAcordeVis=document.getElementById('resultadoAcordeVisual');
+
+function atualizarDiscoAcordes(notasDaEscala) {
+  const grau = parseInt(sliderGrau.value);
+  const tipoAcorde = selectAcorde.value;
+  const view12 = document.getElementById('chordViewSwitch').checked;
+  
+  labelGrau.innerText = `${grau} (${['I','II','III','IV','V','VI','VII'][grau-1]})`;
+
+  // Geometria conforme visualização
+  const cx = view12 ? 120 : 90;
+  const cy = view12 ? 120 : 90;
+  const r_text = view12 ? 75 : 55;
+  const r_disc = view12 ? 107 : 75;
+  const r_hole = view12 ? 16 : 15;
+
+  const svg = document.getElementById('chord-wheel');
+  svg.setAttribute('width', view12 ? '240' : '180');
+  svg.setAttribute('height', view12 ? '240' : '180');
+  svg.setAttribute('viewBox', view12 ? '0 0 240 240' : '0 0 180 180');
+
+  document.getElementById('chord-hole-bg').setAttribute('cx', cx);
+  document.getElementById('chord-hole-bg').setAttribute('cy', cy);
+  document.getElementById('chord-hole-bg').setAttribute('r', view12 ? 120 : 90);
+
+  const discGroup = document.getElementById('chord-rotating-disc');
+  discGroup.style.transition = 'transform 0.4s cubic-bezier(0.4,0,0.2,1), transform-origin 0.4s ease';
+  discGroup.style.transformOrigin = `${cx}px ${cy}px`;
+  
+  const discShapes = discGroup.children;
+  discShapes[0].setAttribute('cx', cx); discShapes[0].setAttribute('cy', cy); discShapes[0].setAttribute('r', r_disc);
+  discShapes[1].setAttribute('cx', cx); discShapes[1].setAttribute('cy', view12 ? 45 : 35); // ponteiro superior
+  discShapes[2].setAttribute('cx', cx); discShapes[2].setAttribute('cy', cy); // pino central
+
+  const intervalosSelecionados = ACORDES[tipoAcorde];
+  const notasDoAcorde = intervalosSelecionados.map(g => notasDaEscala[(grau - 1 + g - 1) % 7]);
+  
+  const rootNota = notasDoAcorde[0];
+  const rootIndexAbs = NOTAS.findIndex(n => n.nota.includes(rootNota));
+
+  const scaleRootNota = notasDaEscala[0];
+  const scaleRootIndexAbs = NOTAS.findIndex(n => n.nota.includes(scaleRootNota));
+
+  // 1. Atualizar textos e círculos de borda
+  if (!view12) {
+      for(let i=0; i<12; i++) {
+          const t = document.getElementById(`chord-text-${i}`);
+          const bg = document.getElementById(`chord-bg-${i}`);
+          
+          if (i < 7) {
+              const a = (i*(360/7)-90)*(Math.PI/180);
+              const posX = cx + r_text * Math.cos(a);
+              const posY = cy + r_text * Math.sin(a);
+              
+              t.setAttribute('x', posX);
+              t.setAttribute('y', posY);
+              t.textContent = notasDaEscala[i];
+              t.setAttribute('fill', '#444');
+              t.setAttribute('opacity', '1');
+              
+              bg.setAttribute('cx', posX);
+              bg.setAttribute('cy', posY);
+              bg.setAttribute('r', r_hole);
+              bg.setAttribute('opacity', '0'); // Esconde contorno na view de 7
+          } else {
+              t.setAttribute('opacity', '0'); 
+              bg.setAttribute('opacity', '0'); 
+          }
+      }
+  } else {
+      for(let i=0; i<12; i++) {
+          const absIdx = (scaleRootIndexAbs + i) % 12;
+          const noteObj = NOTAS[absIdx];
+          const inScaleName = noteObj.nota.find(n => notasDaEscala.includes(n));
+          const noteName = inScaleName || noteObj.nota[0];
+
+          const t = document.getElementById(`chord-text-${i}`);
+          const bg = document.getElementById(`chord-bg-${i}`);
+          
+          const a = (i*(360/12)-90)*(Math.PI/180);
+          const posX = cx + r_text * Math.cos(a);
+          const posY = cy + r_text * Math.sin(a);
+          
+          t.setAttribute('x', posX);
+          t.setAttribute('y', posY);
+          t.textContent = noteName;
+          
+          bg.setAttribute('cx', posX);
+          bg.setAttribute('cy', posY);
+          bg.setAttribute('r', r_hole);
+          
+          if (notasDaEscala.includes(noteName)) {
+              t.setAttribute('opacity', '1');
+              t.setAttribute('fill', '#1a3a37');
+              bg.setAttribute('opacity', '0.3'); // Exibe a borda preta em 10% nas notas da escala
+          } else {
+              t.setAttribute('opacity', '0.5'); 
+              t.setAttribute('fill', '#666');
+              bg.setAttribute('opacity', '0'); // Esconde contorno das notas fora
+          }
+      }
+  }
+
+  // 2. Atualizar furos da máscara (Janelinhas Animadas)
+  const cm = document.getElementById('chord-mask-holes');
+  const existingCircles = Array.from(cm.querySelectorAll('circle'));
+  const needed = intervalosSelecionados.length;
+
+  while (existingCircles.length < needed) {
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+      cm.appendChild(c);
+      existingCircles.push(c);
+  }
+  while (existingCircles.length > needed) {
+      const c = existingCircles.pop();
+      c.remove();
+  }
+  
+  if (!view12) {
+      intervalosSelecionados.forEach((g, i) => {
+          const idx = (g - 1) % 7;
+          const a = (idx * (360 / 7) - 90) * (Math.PI / 180);
+          const c = existingCircles[i];
+          c.setAttribute('cx', cx + r_text * Math.cos(a));
+          c.setAttribute('cy', cy + r_text * Math.sin(a));
+          c.setAttribute('r', r_hole);
+          c.setAttribute('fill', 'black');
+      });
+      document.getElementById('chord-rotating-disc').style.transform = `rotate(${(grau - 1) * (360 / 7)}deg)`;
+  } else {
+      intervalosSelecionados.forEach((g, i) => {
+          const currentChordNote = notasDoAcorde[i];
+          const noteAbsIdx = NOTAS.findIndex(n => n.nota.includes(currentChordNote));
+          
+          const semitonesFromChordRoot = (noteAbsIdx - rootIndexAbs + 12) % 12;
+          const a = (semitonesFromChordRoot * (360 / 12) - 90) * (Math.PI / 180);
+          
+          const c = existingCircles[i];
+          c.setAttribute('cx', cx + r_text * Math.cos(a));
+          c.setAttribute('cy', cy + r_text * Math.sin(a));
+          c.setAttribute('r', r_hole);
+          c.setAttribute('fill', 'black');
+      });
+      
+      const semitonesFromScaleRoot = (rootIndexAbs - scaleRootIndexAbs + 12) % 12;
+      const rotationDeg = semitonesFromScaleRoot * 30;
+      document.getElementById('chord-rotating-disc').style.transform = `rotate(${rotationDeg}deg)`;
+  }
+
+  // Textos complementares
+  document.getElementById('lbl-12notas').style.opacity = view12 ? '1' : '0.5';
+
+  const idxTonicaAbsLocal = NOTAS.findIndex(n => n.nota.includes(rootNota));
+
+  const nomesExplicativos = notasDoAcorde.map((nota, i) => {
+    const grauRelativo = intervalosSelecionados[i];
+    if (grauRelativo === 1) return "Tônica";
+    const idxNotaAbs = NOTAS.findIndex(n => n.nota.includes(nota));
+    const semitons = (idxNotaAbs - idxTonicaAbsLocal + 12) % 12;
+
+    let qualidade = "";
+    if (grauRelativo === 3) qualidade = (semitons === 3) ? " Menor" : " Maior";
+    if (grauRelativo === 5) qualidade = (semitons === 6) ? " Diminuta" : (semitons === 8 ? " Aumentada" : " Justa");
+    if (grauRelativo === 7) qualidade = (semitons === 10) ? " Menor" : " Maior";
+    if (grauRelativo === 9) qualidade = (semitons === 1) ? " Menor" : (semitons === 2 ? " Maior" : " Aumentada");
+    return `${NOMES_INTERVALOS_TEORICOS[grauRelativo]}${qualidade}`;
+  });
+
+  const labelSelect = selectAcorde.options[selectAcorde.selectedIndex].text;
+  document.getElementById('intervalos-detalhe').innerHTML = `
+    <strong>${labelSelect}</strong> = Intervalos: ${intervalosSelecionados.join(', ')}<br>
+    <span style="color: #555;">(${nomesExplicativos.join(', ')})</span>
+  `;
+
+  divAcordeVis.innerHTML = extrairAcorde(notasDaEscala, ACORDES[tipoAcorde], grau);
+}
+
+// ============================================================
+// NOVO DISCO INTERVALOS
+// ============================================================
+const reguaSlider=document.getElementById('reguaSlider');
+const reguaLabel=document.getElementById('reguaLabel');
+const nomesIntervalos=[
+  "Uníssono","2ª menor (1ST)","2ª maior (1T)",
+  "3ª menor (1T e 1ST)","3ª maior (2T)","4ª justa (2T e 1ST)",
+  "5ª dim / 4ª aum (3T)","5ª justa (3T e 1ST)","6ª menor (4T)",
+  "6ª maior (4T e 1ST)","7ª menor (5T)","7ª maior (5T e 1ST)","Oitava (6T)"
+];
+
+function inicializarRegua(){
+
+  const indice=parseInt(document.getElementById('notaSlider').value);
+  const tonica=NOTAS[indice].nota[0];
+  const molde=ESCALAS[document.getElementById('escalaSelect').value];
+  const notas=leitorDeNotasCorretas(gerarEscala(tonica,molde))[0];
+
+  for(let i=0;i<12;i++){
+
+    const texto = NOTAS[i].nota[0];
+
+    const textEl = document.getElementById(`interval-text-${i}`);
+
+    textEl.textContent = texto;
+
+    const ang=(i*30-90)*(Math.PI/180);
+
+    const x=120+75*Math.cos(ang);
+    const y=120+75*Math.sin(ang);
+
+    textEl.setAttribute('x',x);
+    textEl.setAttribute('y',y);
+
+    const rot = indice * 30;
+
+    textEl.style.transition =
+      'transform 2s cubic-bezier(0.4,0,0.2,1)';
+
+    textEl.setAttribute(
+      'transform',
+      `rotate(${rot} ${x} ${y})`
+    );
+
+  }
+
+const grupoIntervalos = document.getElementById('interval-notes');
+
+grupoIntervalos.style.transition =
+  'transform 2s cubic-bezier(0.4,0,0.2,1)';
+
+grupoIntervalos.setAttribute(
+  'transform',
+  `rotate(${-indice * 30} 120 120)`
+);
+
+  atualizarJanelaIntervalo();
+}
+
+function atualizarJanelaIntervalo() {
+  const v = parseInt(reguaSlider.value);
+  reguaLabel.textContent = nomesIntervalos[v];
+  
+  document.getElementById('interval-mask-rotator').style.transform = `rotate(${v * 30}deg)`;
+  document.getElementById('interval-window-group').style.transform = `rotate(${v * 30}deg)`;
+
+  for(let i=0; i<12; i++){
+    const c = document.getElementById(`interval-range-${i}`);
+    if (v > 0 && i > 0 && i < v) {
+      c.setAttribute('opacity', '0.25'); 
+    } else {
+      c.setAttribute('opacity', '0'); 
+    }
+  }
+  
+  updateSliderFill(reguaSlider, v, 12);
+}
+
+reguaSlider.addEventListener('input', atualizarJanelaIntervalo);
+
+// ============================================================
+// SEMICÍRCULO — RODA DE ACIDENTES
+// ============================================================
+const KEY_CX = 200, KEY_CY = 210, KEY_R = 185, KEY_R_NOTE = 150;
+const noteGroups = [];
+
+function criarTextosNoDisco() {
+  const g = document.getElementById('key-disc-notes');
+  g.innerHTML = '';
+  noteGroups.length = 0;
+
+  const notasCompleta = [
+    ['Do', 'Si♯', 'Re♭♭'],
+    ['Do♯', 'Re♭', 'Si♯♯'],
+    ['Re', 'Do♯♯', 'Mi♭♭'],
+    ['Re♯', 'Mi♭', 'Fa♭♭'],
+    ['Mi', 'Re♯♯', 'Fa♭'],
+    ['Fa', 'Mi♯', 'Sol♭♭'],
+    ['Fa♯', 'Sol♭', 'Mi♯♯'],
+    ['Sol', 'Fa♯♯', 'La♭♭'],
+    ['Sol♯', 'La♭'],
+    ['La', 'Sol♯♯', 'Si♭♭'],
+    ['La♯', 'Si♭', 'Do♭♭'],
+    ['Si', 'La♯♯', 'Do♭']
+  ];
+
+  for (let i = 0; i < 12; i++) {
+    const angMath = 90 - i * (360 / 12);
+    const rad = angMath * Math.PI / 180;
+
+    const x = KEY_CX + KEY_R_NOTE * Math.cos(rad);
+    const y = KEY_CY - KEY_R_NOTE * Math.sin(rad);
+
+    const grupo = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    grupo.setAttribute('id', `key-note-${i}`);
+    grupo.style.transition = 'transform 2s cubic-bezier(0.4, 0, 0.2, 1)';
+    grupo.style.transformOrigin = `${x}px ${y}px`;
+
+    const groupObj = { baseY: y, elements: [] };
+
+    notasCompleta[i].forEach((nome) => {
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', x);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('dominant-baseline', 'central');
+      t.style.transition = 'all 2s ease';
+      t.textContent = nome;
+      grupo.appendChild(t);
+      groupObj.elements.push({ name: nome, el: t });
+    });
+
+    noteGroups.push(groupObj);
+    g.appendChild(grupo);
+  }
+}
+criarTextosNoDisco();
+
+let keyDiscRotDeg = 0;
+
+function atualizarDiscoClave(indice) {
+
+  const indicesNaturais = [0, 2, 4, 5, 7, 9, 11];
+
+  const naturalMaisProxima = indicesNaturais.reduce((prev, curr) => {
+    return Math.abs(curr - indice) < Math.abs(prev - indice)
+      ? curr
+      : prev;
+  });
+
+  keyDiscRotDeg = -naturalMaisProxima * 30;
+
+  document.getElementById('key-disc-group').style.transform =
+    `rotate(${keyDiscRotDeg}deg)`;
+
+  for (let i = 0; i < 12; i++) {
+    const t = document.getElementById(`key-note-${i}`);
+    if (t) t.style.transform = `rotate(${-keyDiscRotDeg}deg)`;
+  }
+
+  const tonica = NOTAS[indice].nota[0];
+
+  let targetNatural = tonica.replace('♯', '').replace('♭', '');
+
+  let targetSharp = targetNatural + '♯';
+  let targetFlat  = targetNatural + '♭';
+
+  if (targetSharp === 'Mi♯') targetSharp = 'Fa';
+  if (targetSharp === 'Si♯') targetSharp = 'Do';
+
+  if (targetFlat === 'Fa♭') targetFlat = 'Mi';
+  if (targetFlat === 'Do♭') targetFlat = 'Si';
+
+  const targets = [
+    tonica,
+    targetNatural,
+    targetSharp,
+    targetFlat
+  ];
+
+  const idxLeft = (naturalMaisProxima + 11) % 12;
+  const idxRight = (naturalMaisProxima + 1) % 12;
+  
+  let hideBemol = false;
+  let hideSustenido = false;
+
+  noteGroups.forEach((group, groupIndex) => {
+
+    const targetIndex = group.elements.findIndex(item =>
+      targets.includes(item.name)
+    );
+
+    let orderedElements = [...group.elements];
+
+    if (targetIndex !== -1) {
+      const [targetItem] = orderedElements.splice(targetIndex, 1);
+      orderedElements.unshift(targetItem);
+
+      const isNatural = !targetItem.name.includes('♯') && !targetItem.name.includes('♭');
+      
+      if (groupIndex === idxLeft && isNatural) hideBemol = true;
+      if (groupIndex === idxRight && isNatural) hideSustenido = true;
+    }
+
+    orderedElements.forEach((item, idx) => {
+
+      const newY =
+        group.baseY +
+        (idx * 10) -
+        ((orderedElements.length - 1) * 5);
+
+      item.el.setAttribute('y', newY);
+
+      const isHighlight =
+        idx === 0 &&
+        targetIndex !== -1;
+
+      item.el.setAttribute(
+        'fill',
+        isHighlight ? '#075e54' : '#999'
+      );
+
+      item.el.setAttribute(
+        'font-weight',
+        isHighlight ? '900' : '500'
+      );
+
+      item.el.setAttribute(
+        'font-size',
+        isHighlight ? '12.5' : '10.5'
+      );
+    });
+
+  });
+
+  document.getElementById('label-bemol').style.opacity = hideBemol ? '0' : '1';
+  document.getElementById('label-sustenido').style.opacity = hideSustenido ? '0' : '1';
+}
+
+
+
+// ============================================================
+// UTILITÁRIO: fill slider
+// ============================================================
+function updateSliderFill(slider,val,max){
+  const pct=`${(val/max)*100}%`;
+  slider.style.setProperty('--val',pct);
+  slider.style.background=`linear-gradient(to right,#128c7e 0%,#128c7e ${pct},#d0cdc8 ${pct})`;
+}
+
+// ============================================================
+// INTERFACE PRINCIPAL
+// ============================================================
+const slider=document.getElementById('notaSlider');
+const labelTonica=document.getElementById('notaLabel');
+const labelTonica2=document.getElementById('notaLabel2');
+const selectEscala=document.getElementById('escalaSelect');
+const divEscala=document.getElementById('resultadoEscala');
+
+function atualizarVisualIntervalos(molde){
+  const c=document.getElementById('container-intervalos');c.innerHTML='';
+  molde.forEach(v=>{const s=document.createElement('span');s.textContent=v===1?'ST':v===2?'T':'T+ST';c.appendChild(s);});
+}
+
+function processarTudo(){
+  const indice=parseInt(slider.value);
+  const tonica=NOTAS[indice].nota[0];
+  const molde=ESCALAS[selectEscala.value];
+  const escalas=leitorDeNotasCorretas(gerarEscala(tonica,molde));
+
+  const notaCorreta=escalas[0][0];
+  const notaObj=NOTAS[indice];
+  const idxNome=notaObj.nota.indexOf(notaCorreta);
+  const cifraCorr=idxNome!==-1?notaObj.cifra[idxNome]:notaObj.cifra[0];
+
+  labelTonica.innerText=`${notaCorreta}`;
+  labelTonica2.innerText=`${cifraCorr}`;
+
+  const tagsEnarmonicas = notaObj.nota.map((nome, i) => {
+    if (nome === notaCorreta) return null; 
+    const cifra = notaObj.cifra[i] || notaObj.cifra[0];
+    return `<div class="tag-enarmonica">${nome} <span class="tag-cifra">${cifra}</span></div>`;
+  }).filter(Boolean);
+
+  const containerInfo = document.getElementById('nota-info-extra');
+  if (tagsEnarmonicas.length > 0) {
+    containerInfo.style.display = 'flex';
+    containerInfo.innerHTML = `
+      <div class="info-extra-title">Notas que representam o mesmo som</div>
+      <div class="info-extra-tags">${tagsEnarmonicas.join('')}</div>
+    `;
+  } else {
+    containerInfo.style.display = 'none';
+  }
+
+  
+  atualizarDiscoVisual(indice,molde,escalas[0]);
+const escalaPrincipal = escalas[0]?.join(' ') || 'N/A';
+const escalaCorrespondente = escalas[1]?.join(' ') || 'N/A';
+const selectDaEscala = document.getElementById('escalaSelect');
+const escalaSelecionadaTexto = selectDaEscala.options[selectDaEscala.selectedIndex].text;
+
+divEscala.innerHTML = `
+  <div style="display:flex;flex-direction:column;gap:0px;">
+    <small>${escalaSelecionadaTexto}</small>
+      <div style="
+        font-size:14px;
+        color:#1a3a37;
+        font-weight:700;
+        text-align:center;
+      ">${escalaPrincipal}</div>
+
+      <div style="
+      margin-top: 16px;
+        font-size:10px;
+        text-transform:uppercase;
+        letter-spacing:.08em;
+        color:#888;
+        font-weight:700;
+        text-align:center;
+      ">Escala Correspondente</div>
+
+      <div style="
+        font-size:13px;
+        color:#666;
+        text-align:center;
+      ">${escalaCorrespondente}</div>
+
+  </div>
+`;
+
+  atualizarVisualIntervalos(molde);
+  atualizarDiscoAcordes(escalas[0].slice(0,7));
+  atualizarDiscoClave(indice); 
+  
+  inicializarRegua();
+  updateSliderFill(slider,indice,11);
+}
+
+slider.addEventListener('input',processarTudo);
+selectEscala.addEventListener('change',processarTudo);
+sliderGrau.addEventListener('input',processarTudo);
+selectAcorde.addEventListener('change',processarTudo);
+document.getElementById('chordViewSwitch').addEventListener('change', processarTudo);
+
+updateSliderFill(sliderGrau,0,6);
+updateSliderFill(document.getElementById('reguaSlider'),0,12);
+processarTudo();
+</script>
+</body>
+</html>
