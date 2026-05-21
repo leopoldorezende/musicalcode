@@ -136,17 +136,15 @@ for(let i=0;i<12;i++){
 
 const chordNotes=document.getElementById('chord-notes');
 for(let i=0;i<12;i++){ 
-  // Cria o círculo de borda primeiro (para ficar atrás do texto)
   const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   bg.setAttribute('id', `chord-bg-${i}`);
   bg.setAttribute('fill', 'none'); 
-  bg.setAttribute('stroke', 'black'); // Contorno preto
-  bg.setAttribute('stroke-width', '2'); // Espessura da borda
-  bg.setAttribute('opacity', '0'); // Começa invisível
+  bg.setAttribute('stroke', 'black'); 
+  bg.setAttribute('stroke-width', '2'); 
+  bg.setAttribute('opacity', '0'); 
   bg.style.transition = 'all 0.4s ease';
   chordNotes.appendChild(bg);
 
-  // Depois o texto
   const t=document.createElementNS('http://www.w3.org/2000/svg','text');
   t.setAttribute('id',`chord-text-${i}`); 
   t.style.transition = 'all 0.4s ease';
@@ -188,7 +186,6 @@ function atualizarDiscoAcordes(notasDaEscala) {
   
   labelGrau.innerText = `${grau} (${['I','II','III','IV','V','VI','VII'][grau-1]})`;
 
-  // Geometria conforme visualização
   const cx = view12 ? 120 : 90;
   const cy = view12 ? 120 : 90;
   const r_text = view12 ? 75 : 55;
@@ -200,6 +197,9 @@ function atualizarDiscoAcordes(notasDaEscala) {
   svg.setAttribute('height', view12 ? '240' : '180');
   svg.setAttribute('viewBox', view12 ? '0 0 240 240' : '0 0 180 180');
 
+  // Move o botão central para ficar sempre no miolo
+  document.getElementById('btn-play-acordes').setAttribute('transform', `translate(${cx}, ${cy})`);
+
   document.getElementById('chord-hole-bg').setAttribute('cx', cx);
   document.getElementById('chord-hole-bg').setAttribute('cy', cy);
   document.getElementById('chord-hole-bg').setAttribute('r', view12 ? 120 : 90);
@@ -210,19 +210,16 @@ function atualizarDiscoAcordes(notasDaEscala) {
   
   const discShapes = discGroup.children;
   discShapes[0].setAttribute('cx', cx); discShapes[0].setAttribute('cy', cy); discShapes[0].setAttribute('r', r_disc);
-  discShapes[1].setAttribute('cx', cx); discShapes[1].setAttribute('cy', view12 ? 45 : 35); // ponteiro superior
-  discShapes[2].setAttribute('cx', cx); discShapes[2].setAttribute('cy', cy); // pino central
+  discShapes[1].setAttribute('cx', cx); discShapes[1].setAttribute('cy', view12 ? 45 : 35); 
 
   const intervalosSelecionados = ACORDES[tipoAcorde];
   const notasDoAcorde = intervalosSelecionados.map(g => notasDaEscala[(grau - 1 + g - 1) % 7]);
   
   const rootNota = notasDoAcorde[0];
   const rootIndexAbs = NOTAS.findIndex(n => n.nota.includes(rootNota));
-
   const scaleRootNota = notasDaEscala[0];
   const scaleRootIndexAbs = NOTAS.findIndex(n => n.nota.includes(scaleRootNota));
 
-  // 1. Atualizar textos e círculos de borda
   if (!view12) {
       for(let i=0; i<12; i++) {
           const t = document.getElementById(`chord-text-${i}`);
@@ -233,19 +230,14 @@ function atualizarDiscoAcordes(notasDaEscala) {
               const posX = cx + r_text * Math.cos(a);
               const posY = cy + r_text * Math.sin(a);
               
-              t.setAttribute('x', posX);
-              t.setAttribute('y', posY);
+              t.setAttribute('x', posX); t.setAttribute('y', posY);
               t.textContent = notasDaEscala[i];
-              t.setAttribute('fill', '#444');
-              t.setAttribute('opacity', '1');
+              t.setAttribute('fill', '#444'); t.setAttribute('opacity', '1');
               
-              bg.setAttribute('cx', posX);
-              bg.setAttribute('cy', posY);
-              bg.setAttribute('r', r_hole);
-              bg.setAttribute('opacity', '0'); // Esconde contorno na view de 7
+              bg.setAttribute('cx', posX); bg.setAttribute('cy', posY);
+              bg.setAttribute('r', r_hole); bg.setAttribute('opacity', '0'); 
           } else {
-              t.setAttribute('opacity', '0'); 
-              bg.setAttribute('opacity', '0'); 
+              t.setAttribute('opacity', '0'); bg.setAttribute('opacity', '0'); 
           }
       }
   } else {
@@ -262,27 +254,21 @@ function atualizarDiscoAcordes(notasDaEscala) {
           const posX = cx + r_text * Math.cos(a);
           const posY = cy + r_text * Math.sin(a);
           
-          t.setAttribute('x', posX);
-          t.setAttribute('y', posY);
+          t.setAttribute('x', posX); t.setAttribute('y', posY);
           t.textContent = noteName;
-          
-          bg.setAttribute('cx', posX);
-          bg.setAttribute('cy', posY);
+          bg.setAttribute('cx', posX); bg.setAttribute('cy', posY);
           bg.setAttribute('r', r_hole);
           
           if (notasDaEscala.includes(noteName)) {
-              t.setAttribute('opacity', '1');
-              t.setAttribute('fill', '#1a3a37');
-              bg.setAttribute('opacity', '0.3'); // Exibe a borda preta em 10% nas notas da escala
+              t.setAttribute('opacity', '1'); t.setAttribute('fill', '#1a3a37');
+              bg.setAttribute('opacity', '0.5');
           } else {
-              t.setAttribute('opacity', '0.5'); 
-              t.setAttribute('fill', '#666');
-              bg.setAttribute('opacity', '0'); // Esconde contorno das notas fora
+              t.setAttribute('opacity', '0.5'); t.setAttribute('fill', '#666');
+              bg.setAttribute('opacity', '0'); 
           }
       }
   }
 
-  // 2. Atualizar furos da máscara (Janelinhas Animadas)
   const cm = document.getElementById('chord-mask-holes');
   const existingCircles = Array.from(cm.querySelectorAll('circle'));
   const needed = intervalosSelecionados.length;
@@ -290,12 +276,10 @@ function atualizarDiscoAcordes(notasDaEscala) {
   while (existingCircles.length < needed) {
       const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       c.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-      cm.appendChild(c);
-      existingCircles.push(c);
+      cm.appendChild(c); existingCircles.push(c);
   }
   while (existingCircles.length > needed) {
-      const c = existingCircles.pop();
-      c.remove();
+      existingCircles.pop().remove();
   }
   
   if (!view12) {
@@ -305,41 +289,32 @@ function atualizarDiscoAcordes(notasDaEscala) {
           const c = existingCircles[i];
           c.setAttribute('cx', cx + r_text * Math.cos(a));
           c.setAttribute('cy', cy + r_text * Math.sin(a));
-          c.setAttribute('r', r_hole);
-          c.setAttribute('fill', 'black');
+          c.setAttribute('r', r_hole); c.setAttribute('fill', 'black');
       });
       document.getElementById('chord-rotating-disc').style.transform = `rotate(${(grau - 1) * (360 / 7)}deg)`;
   } else {
       intervalosSelecionados.forEach((g, i) => {
           const currentChordNote = notasDoAcorde[i];
           const noteAbsIdx = NOTAS.findIndex(n => n.nota.includes(currentChordNote));
-          
           const semitonesFromChordRoot = (noteAbsIdx - rootIndexAbs + 12) % 12;
           const a = (semitonesFromChordRoot * (360 / 12) - 90) * (Math.PI / 180);
-          
           const c = existingCircles[i];
           c.setAttribute('cx', cx + r_text * Math.cos(a));
           c.setAttribute('cy', cy + r_text * Math.sin(a));
-          c.setAttribute('r', r_hole);
-          c.setAttribute('fill', 'black');
+          c.setAttribute('r', r_hole); c.setAttribute('fill', 'black');
       });
-      
       const semitonesFromScaleRoot = (rootIndexAbs - scaleRootIndexAbs + 12) % 12;
-      const rotationDeg = semitonesFromScaleRoot * 30;
-      document.getElementById('chord-rotating-disc').style.transform = `rotate(${rotationDeg}deg)`;
+      document.getElementById('chord-rotating-disc').style.transform = `rotate(${semitonesFromScaleRoot * 30}deg)`;
   }
 
-  // Textos complementares
   document.getElementById('lbl-12notas').style.opacity = view12 ? '1' : '0.5';
 
   const idxTonicaAbsLocal = NOTAS.findIndex(n => n.nota.includes(rootNota));
-
   const nomesExplicativos = notasDoAcorde.map((nota, i) => {
     const grauRelativo = intervalosSelecionados[i];
     if (grauRelativo === 1) return "Tônica";
     const idxNotaAbs = NOTAS.findIndex(n => n.nota.includes(nota));
     const semitons = (idxNotaAbs - idxTonicaAbsLocal + 12) % 12;
-
     let qualidade = "";
     if (grauRelativo === 3) qualidade = (semitons === 3) ? " Menor" : " Maior";
     if (grauRelativo === 5) qualidade = (semitons === 6) ? " Diminuta" : (semitons === 8 ? " Aumentada" : " Justa");
@@ -370,72 +345,35 @@ const nomesIntervalos=[
 ];
 
 function inicializarRegua(){
-
   const indice=parseInt(document.getElementById('notaSlider').value);
-  const tonica=NOTAS[indice].nota[0];
-  const molde=ESCALAS[document.getElementById('escalaSelect').value];
-  const notas=leitorDeNotasCorretas(gerarEscala(tonica,molde))[0];
-
   for(let i=0;i<12;i++){
-
     const texto = NOTAS[i].nota[0];
-
     const textEl = document.getElementById(`interval-text-${i}`);
-
     textEl.textContent = texto;
-
     const ang=(i*30-90)*(Math.PI/180);
-
-    const x=120+75*Math.cos(ang);
-    const y=120+75*Math.sin(ang);
-
-    textEl.setAttribute('x',x);
-    textEl.setAttribute('y',y);
-
-    const rot = indice * 30;
-
-    textEl.style.transition =
-      'transform 2s cubic-bezier(0.4,0,0.2,1)';
-
-    textEl.setAttribute(
-      'transform',
-      `rotate(${rot} ${x} ${y})`
-    );
-
+    const x=120+75*Math.cos(ang); const y=120+75*Math.sin(ang);
+    textEl.setAttribute('x',x); textEl.setAttribute('y',y);
+    textEl.style.transition = 'transform 2s cubic-bezier(0.4,0,0.2,1)';
+    textEl.setAttribute('transform', `rotate(${indice * 30} ${x} ${y})`);
   }
-
-const grupoIntervalos = document.getElementById('interval-notes');
-
-grupoIntervalos.style.transition =
-  'transform 2s cubic-bezier(0.4,0,0.2,1)';
-
-grupoIntervalos.setAttribute(
-  'transform',
-  `rotate(${-indice * 30} 120 120)`
-);
-
+  const grupoIntervalos = document.getElementById('interval-notes');
+  grupoIntervalos.style.transition = 'transform 2s cubic-bezier(0.4,0,0.2,1)';
+  grupoIntervalos.setAttribute('transform', `rotate(${-indice * 30} 120 120)`);
   atualizarJanelaIntervalo();
 }
 
 function atualizarJanelaIntervalo() {
   const v = parseInt(reguaSlider.value);
   reguaLabel.textContent = nomesIntervalos[v];
-  
   document.getElementById('interval-mask-rotator').style.transform = `rotate(${v * 30}deg)`;
   document.getElementById('interval-window-group').style.transform = `rotate(${v * 30}deg)`;
-
   for(let i=0; i<12; i++){
     const c = document.getElementById(`interval-range-${i}`);
-    if (v > 0 && i > 0 && i < v) {
-      c.setAttribute('opacity', '0.25'); 
-    } else {
-      c.setAttribute('opacity', '0'); 
-    }
+    if (v > 0 && i > 0 && i < v) c.setAttribute('opacity', '0.25'); 
+    else c.setAttribute('opacity', '0'); 
   }
-  
   updateSliderFill(reguaSlider, v, 12);
 }
-
 reguaSlider.addEventListener('input', atualizarJanelaIntervalo);
 
 // ============================================================
@@ -448,26 +386,14 @@ function criarTextosNoDisco() {
   const g = document.getElementById('key-disc-notes');
   g.innerHTML = '';
   noteGroups.length = 0;
-
   const notasCompleta = [
-    ['Do', 'Si♯', 'Re♭♭'],
-    ['Do♯', 'Re♭', 'Si♯♯'],
-    ['Re', 'Do♯♯', 'Mi♭♭'],
-    ['Re♯', 'Mi♭', 'Fa♭♭'],
-    ['Mi', 'Re♯♯', 'Fa♭'],
-    ['Fa', 'Mi♯', 'Sol♭♭'],
-    ['Fa♯', 'Sol♭', 'Mi♯♯'],
-    ['Sol', 'Fa♯♯', 'La♭♭'],
-    ['Sol♯', 'La♭'],
-    ['La', 'Sol♯♯', 'Si♭♭'],
-    ['La♯', 'Si♭', 'Do♭♭'],
-    ['Si', 'La♯♯', 'Do♭']
+    ['Do', 'Si♯', 'Re♭♭'], ['Do♯', 'Re♭', 'Si♯♯'], ['Re', 'Do♯♯', 'Mi♭♭'],
+    ['Re♯', 'Mi♭', 'Fa♭♭'], ['Mi', 'Re♯♯', 'Fa♭'], ['Fa', 'Mi♯', 'Sol♭♭'],
+    ['Fa♯', 'Sol♭', 'Mi♯♯'], ['Sol', 'Fa♯♯', 'La♭♭'], ['Sol♯', 'La♭'],
+    ['La', 'Sol♯♯', 'Si♭♭'], ['La♯', 'Si♭', 'Do♭♭'], ['Si', 'La♯♯', 'Do♭']
   ];
-
   for (let i = 0; i < 12; i++) {
-    const angMath = 90 - i * (360 / 12);
-    const rad = angMath * Math.PI / 180;
-
+    const rad = (90 - i * (360 / 12)) * Math.PI / 180;
     const x = KEY_CX + KEY_R_NOTE * Math.cos(rad);
     const y = KEY_CY - KEY_R_NOTE * Math.sin(rad);
 
@@ -477,40 +403,30 @@ function criarTextosNoDisco() {
     grupo.style.transformOrigin = `${x}px ${y}px`;
 
     const groupObj = { baseY: y, elements: [] };
-
     notasCompleta[i].forEach((nome) => {
       const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      t.setAttribute('x', x);
-      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('x', x); t.setAttribute('text-anchor', 'middle');
       t.setAttribute('dominant-baseline', 'central');
-      t.style.transition = 'all 2s ease';
-      t.textContent = nome;
-      grupo.appendChild(t);
-      groupObj.elements.push({ name: nome, el: t });
+      t.style.transition = 'all 2s ease'; t.textContent = nome;
+      grupo.appendChild(t); groupObj.elements.push({ name: nome, el: t });
     });
-
-    noteGroups.push(groupObj);
-    g.appendChild(grupo);
+    noteGroups.push(groupObj); g.appendChild(grupo);
   }
 }
 criarTextosNoDisco();
 
-let keyDiscRotDeg = 0;
+window.currentNaturalIndex = 0; // Guardar estado pro áudio
 
 function atualizarDiscoClave(indice) {
-
   const indicesNaturais = [0, 2, 4, 5, 7, 9, 11];
+  const naturalMaisProxima = indicesNaturais.reduce((prev, curr) => 
+    Math.abs(curr - indice) < Math.abs(prev - indice) ? curr : prev
+  );
 
-  const naturalMaisProxima = indicesNaturais.reduce((prev, curr) => {
-    return Math.abs(curr - indice) < Math.abs(prev - indice)
-      ? curr
-      : prev;
-  });
+  window.currentNaturalIndex = naturalMaisProxima; // Para o áudio tocar certinho
 
-  keyDiscRotDeg = -naturalMaisProxima * 30;
-
-  document.getElementById('key-disc-group').style.transform =
-    `rotate(${keyDiscRotDeg}deg)`;
+  const keyDiscRotDeg = -naturalMaisProxima * 30;
+  document.getElementById('key-disc-group').style.transform = `rotate(${keyDiscRotDeg}deg)`;
 
   for (let i = 0; i < 12; i++) {
     const t = document.getElementById(`key-note-${i}`);
@@ -518,85 +434,45 @@ function atualizarDiscoClave(indice) {
   }
 
   const tonica = NOTAS[indice].nota[0];
-
   let targetNatural = tonica.replace('♯', '').replace('♭', '');
-
   let targetSharp = targetNatural + '♯';
   let targetFlat  = targetNatural + '♭';
 
   if (targetSharp === 'Mi♯') targetSharp = 'Fa';
   if (targetSharp === 'Si♯') targetSharp = 'Do';
-
   if (targetFlat === 'Fa♭') targetFlat = 'Mi';
   if (targetFlat === 'Do♭') targetFlat = 'Si';
 
-  const targets = [
-    tonica,
-    targetNatural,
-    targetSharp,
-    targetFlat
-  ];
-
+  const targets = [tonica, targetNatural, targetSharp, targetFlat];
   const idxLeft = (naturalMaisProxima + 11) % 12;
   const idxRight = (naturalMaisProxima + 1) % 12;
-  
-  let hideBemol = false;
-  let hideSustenido = false;
+  let hideBemol = false; let hideSustenido = false;
 
   noteGroups.forEach((group, groupIndex) => {
-
-    const targetIndex = group.elements.findIndex(item =>
-      targets.includes(item.name)
-    );
-
+    const targetIndex = group.elements.findIndex(item => targets.includes(item.name));
     let orderedElements = [...group.elements];
 
     if (targetIndex !== -1) {
       const [targetItem] = orderedElements.splice(targetIndex, 1);
       orderedElements.unshift(targetItem);
-
       const isNatural = !targetItem.name.includes('♯') && !targetItem.name.includes('♭');
-      
       if (groupIndex === idxLeft && isNatural) hideBemol = true;
       if (groupIndex === idxRight && isNatural) hideSustenido = true;
     }
 
     orderedElements.forEach((item, idx) => {
-
-      const newY =
-        group.baseY +
-        (idx * 10) -
-        ((orderedElements.length - 1) * 5);
-
+      const newY = group.baseY + (idx * 10) - ((orderedElements.length - 1) * 5);
       item.el.setAttribute('y', newY);
-
-      const isHighlight =
-        idx === 0 &&
-        targetIndex !== -1;
-
-      item.el.setAttribute(
-        'fill',
-        isHighlight ? '#075e54' : '#999'
-      );
-
-      item.el.setAttribute(
-        'font-weight',
-        isHighlight ? '900' : '500'
-      );
-
-      item.el.setAttribute(
-        'font-size',
-        isHighlight ? '12.5' : '10.5'
-      );
+      const isHighlight = idx === 0 && targetIndex !== -1;
+      item.el.setAttribute('fill', isHighlight ? '#075e54' : '#999');
+      item.el.setAttribute('font-weight', isHighlight ? '900' : '500');
+      item.el.setAttribute('font-size', isHighlight ? '12.5' : '10.5');
     });
-
   });
 
   document.getElementById('label-bemol').style.opacity = hideBemol ? '0' : '1';
   document.getElementById('label-sustenido').style.opacity = hideSustenido ? '0' : '1';
 }
-
-
 
 // ============================================================
 // UTILITÁRIO: fill slider
@@ -644,49 +520,24 @@ function processarTudo(){
   const containerInfo = document.getElementById('nota-info-extra');
   if (tagsEnarmonicas.length > 0) {
     containerInfo.style.display = 'flex';
-    containerInfo.innerHTML = `
-      <div class="info-extra-title">Notas que representam o mesmo som</div>
-      <div class="info-extra-tags">${tagsEnarmonicas.join('')}</div>
-    `;
+    containerInfo.innerHTML = `<div class="info-extra-title">Notas que representam o mesmo som</div><div class="info-extra-tags">${tagsEnarmonicas.join('')}</div>`;
   } else {
     containerInfo.style.display = 'none';
   }
-
   
   atualizarDiscoVisual(indice,molde,escalas[0]);
-const escalaPrincipal = escalas[0]?.join(' ') || 'N/A';
-const escalaCorrespondente = escalas[1]?.join(' ') || 'N/A';
-const selectDaEscala = document.getElementById('escalaSelect');
-const escalaSelecionadaTexto = selectDaEscala.options[selectDaEscala.selectedIndex].text;
+  const escalaPrincipal = escalas[0]?.join(' ') || 'N/A';
+  const escalaCorrespondente = escalas[1]?.join(' ') || 'N/A';
+  const escalaSelecionadaTexto = selectEscala.options[selectEscala.selectedIndex].text;
 
-divEscala.innerHTML = `
-  <div style="display:flex;flex-direction:column;gap:0px;">
-    <small>${escalaSelecionadaTexto}</small>
-      <div style="
-        font-size:14px;
-        color:#1a3a37;
-        font-weight:700;
-        text-align:center;
-      ">${escalaPrincipal}</div>
-
-      <div style="
-      margin-top: 16px;
-        font-size:10px;
-        text-transform:uppercase;
-        letter-spacing:.08em;
-        color:#888;
-        font-weight:700;
-        text-align:center;
-      ">Escala Correspondente</div>
-
-      <div style="
-        font-size:13px;
-        color:#666;
-        text-align:center;
-      ">${escalaCorrespondente}</div>
-
-  </div>
-`;
+  divEscala.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:0px;">
+      <small>${escalaSelecionadaTexto}</small>
+      <div style="font-size:14px;color:#1a3a37;font-weight:700;text-align:center;">${escalaPrincipal}</div>
+      <div style="margin-top: 16px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#888;font-weight:700;text-align:center;">Escala Correspondente</div>
+      <div style="font-size:13px;color:#666;text-align:center;">${escalaCorrespondente}</div>
+    </div>
+  `;
 
   atualizarVisualIntervalos(molde);
   atualizarDiscoAcordes(escalas[0].slice(0,7));
@@ -705,3 +556,220 @@ document.getElementById('chordViewSwitch').addEventListener('change', processarT
 updateSliderFill(sliderGrau,0,6);
 updateSliderFill(document.getElementById('reguaSlider'),0,12);
 processarTudo();
+
+
+// O interceptador global para os nomes das escalas e acidentes atuais
+window.escalaNomesVisuais = [];
+window.nomesAcidentesAtuais = { natural: '', bemol: '', sustenido: '' };
+
+// Função injetora rápida para salvar o estado dos discos (adicione isso no processarTudo e atualizarDiscoClave)
+const originalAtualizarDiscoVisual = atualizarDiscoVisual;
+atualizarDiscoVisual = function(indiceTonica, molde, notasNomeadas) {
+    const arr = NOTAS.map(n => n.nota[0]);
+    let posAbs = indiceTonica;
+    for (let i = 0; i < 7; i++) { arr[posAbs % 12] = notasNomeadas[i]; posAbs += molde[i]; }
+    window.escalaNomesVisuais = arr; // Salva para o áudio piscar certo
+    originalAtualizarDiscoVisual(indiceTonica, molde, notasNomeadas);
+};
+
+const originalAtualizarDiscoClave = atualizarDiscoClave;
+atualizarDiscoClave = function(indice) {
+    originalAtualizarDiscoClave(indice);
+    const tonica = NOTAS[indice].nota[0];
+    let targetNatural = tonica.replace('♯', '').replace('♭', '');
+    let targetSharp = targetNatural + '♯';
+    let targetFlat = targetNatural + '♭';
+    if (targetSharp === 'Mi♯') targetSharp = 'Fa';
+    if (targetSharp === 'Si♯') targetSharp = 'Do';
+    if (targetFlat === 'Fa♭') targetFlat = 'Mi';
+    if (targetFlat === 'Do♭') targetFlat = 'Si';
+    window.nomesAcidentesAtuais = { natural: targetNatural, bemol: targetFlat, sustenido: targetSharp };
+};
+
+
+// ============================================================
+// AUDIO SYSTEM E FLASH VISUAL
+// ============================================================
+const FLAT_NOTES = ['c', 'db', 'd', 'eb', 'e', 'f', 'gb', 'g', 'ab', 'a', 'bb', 'b'];
+let isPlayingAudio = false;
+
+// Função para buscar o elemento no SVG e disparar o CSS de brilho VIA JAVASCRIPT
+function piscarNoDisco(containerId, notaNome) {
+if (containerId === 'html-nota') {
+        const el = document.getElementById('notaLabel2'); // Apontando para a Cifra
+        el.style.transition = 'none';
+        el.style.color = '#f1c40f'; // Dourado
+        el.style.textShadow = '0 0 12px rgba(241, 196, 15, 0.8)';
+        
+        setTimeout(() => {
+            el.style.transition = 'all 0.6s ease';
+            el.style.color = '#128c7e'; // Volta a cor original
+            el.style.textShadow = 'none';
+        }, 300);
+        return;
+    }
+
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const textos = container.querySelectorAll('text');
+    for (let t of textos) {
+        if (t.textContent.trim() === notaNome) {
+            const oldFill = t.getAttribute('fill') || '#444';
+            const oldWeight = t.getAttribute('font-weight') || '700';
+            
+            t.style.transition = 'none'; 
+            t.setAttribute('fill', '#f1c40f');
+            t.setAttribute('font-weight', '900');
+            t.style.filter = 'drop-shadow(0px 0px 8px #f1c40f)';
+            
+            setTimeout(() => {
+                t.style.transition = 'all 0.6s ease';
+                t.setAttribute('fill', oldFill);
+                t.setAttribute('font-weight', oldWeight);
+                t.style.filter = 'none';
+            }, 350);
+        }
+    }
+}
+
+function playMidi(midi, volume = 1.0) {
+    const noteIdx = midi % 12;
+    const oct = Math.floor(midi / 12) - 1;
+    const fileName = `${FLAT_NOTES[noteIdx]}${oct}`;
+    const audio = new Audio(`audios/${fileName}.mp3`);
+    audio.volume = volume;
+    audio.play().catch(e => console.warn('Áudio não encontrado:', fileName));
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function playSequence(seqFn) {
+    if (isPlayingAudio) return;
+    isPlayingAudio = true;
+    try { await seqFn(); } catch (e) { console.error(e) }
+    isPlayingAudio = false;
+}
+
+function getScaleMidi(tonicaIndex, molde) {
+    let scale = [60 + tonicaIndex];
+    let curr = 60 + tonicaIndex;
+    for (let i = 0; i < molde.length; i++) { curr += molde[i]; scale.push(curr); }
+    const len = scale.length;
+    for (let i = 1; i < len; i++) { scale.push(scale[i] + 12); }
+    return scale;
+}
+
+// 1. Play NOTAS
+document.getElementById('btn-play-nota').addEventListener('click', () => {
+    const midi = 60 + parseInt(slider.value);
+    playMidi(midi);
+    piscarNoDisco('html-nota', '');
+});
+
+// 2. Play ACIDENTES (Calcula os nomes corretos na hora do clique)
+document.getElementById('btn-play-acidentes').addEventListener('click', () => {
+    playSequence(async () => {
+        const indice = parseInt(slider.value);
+        const indicesNaturais = [0, 2, 4, 5, 7, 9, 11];
+        const naturalMaisProxima = indicesNaturais.reduce((prev, curr) => 
+            Math.abs(curr - indice) < Math.abs(prev - indice) ? curr : prev
+        );
+        
+        const tonica = NOTAS[indice].nota[0];
+        let targetNatural = tonica.replace('♯', '').replace('♭', '');
+        let targetSharp = targetNatural + '♯';
+        let targetFlat = targetNatural + '♭';
+        
+        if (targetSharp === 'Mi♯') targetSharp = 'Fa';
+        if (targetSharp === 'Si♯') targetSharp = 'Do';
+        if (targetFlat === 'Fa♭') targetFlat = 'Mi';
+        if (targetFlat === 'Do♭') targetFlat = 'Si';
+
+        const naturalMidi = 60 + naturalMaisProxima;
+        
+        playMidi(naturalMidi); piscarNoDisco('key-wheel-svg', targetNatural); await sleep(600);
+        playMidi(naturalMidi - 1); piscarNoDisco('key-wheel-svg', targetFlat); await sleep(600);
+        playMidi(naturalMidi); piscarNoDisco('key-wheel-svg', targetNatural); await sleep(600);
+        playMidi(naturalMidi + 1); piscarNoDisco('key-wheel-svg', targetSharp);
+    });
+});
+
+// 3. Play INTERVALOS 
+document.getElementById('btn-play-intervalos').addEventListener('click', () => {
+    playSequence(async () => {
+        const rootMidi = 60 + parseInt(slider.value);
+        const interval = parseInt(document.getElementById('reguaSlider').value);
+        const nomeRoot = NOTAS[rootMidi % 12].nota[0];
+        const nomeAlvo = NOTAS[(rootMidi + interval) % 12].nota[0];
+
+        playMidi(rootMidi);
+        piscarNoDisco('interval-wheel', nomeRoot);
+        await sleep(600);
+        
+        if (interval === 0) { 
+            playMidi(rootMidi);
+            piscarNoDisco('interval-wheel', nomeRoot);
+        } else {
+            playMidi(rootMidi + interval);
+            piscarNoDisco('interval-wheel', nomeAlvo);
+        }
+    });
+});
+
+// 4. Play ESCALAS (Puxa do array exato renderizado na tela)
+document.getElementById('btn-play-escalas').addEventListener('click', () => {
+    playSequence(async () => {
+        const tonicaIdx = parseInt(slider.value);
+        const molde = ESCALAS[selectEscala.value];
+        
+        // Recalcula os nomes que estão na tela agora
+        const tonicaNome = NOTAS[tonicaIdx].nota[0];
+        const escalasCorretas = leitorDeNotasCorretas(gerarEscala(tonicaNome, molde));
+        const arrNomesVisuais = NOTAS.map(n => n.nota[0]);
+        let posAbs = tonicaIdx;
+        for (let i = 0; i < 7; i++) { 
+            arrNomesVisuais[posAbs % 12] = escalasCorretas[0][i]; 
+            posAbs += molde[i]; 
+        }
+
+        const scaleMidi = getScaleMidi(tonicaIdx, molde);
+        
+        for (let i = 0; i <= molde.length; i++) {
+            const m = scaleMidi[i];
+            playMidi(m);
+            piscarNoDisco('music-wheel', arrNomesVisuais[m % 12]);
+            await sleep(400);
+        }
+    });
+});
+
+// 5. Play ACORDES
+document.getElementById('btn-play-acordes').addEventListener('click', () => {
+    playSequence(async () => {
+        const tonicaIdx = parseInt(slider.value);
+        const molde = ESCALAS[selectEscala.value];
+        const grau = parseInt(document.getElementById('grauSlider').value);
+        const tipoAcorde = document.getElementById('acordeSelect').value;
+        
+        const tonicaNome = NOTAS[tonicaIdx].nota[0];
+        const escalasCorretas = leitorDeNotasCorretas(gerarEscala(tonicaNome, molde));
+        const notasDaEscala = escalasCorretas[0];
+        const notasDoAcorde = ACORDES[tipoAcorde].map(g => notasDaEscala[(grau - 1 + g - 1) % 7]);
+
+        const baseScale = getScaleMidi(tonicaIdx, molde);
+        const chordMidi = ACORDES[tipoAcorde].map(g => baseScale[(grau - 1) + (g - 1)]);
+        
+        for(let i = 0; i < chordMidi.length; i++) {
+            playMidi(chordMidi[i]);
+            piscarNoDisco('chord-wheel', notasDoAcorde[i]);
+            await sleep(400);
+        }
+        await sleep(600);
+
+        chordMidi.forEach((m, i) => {
+            playMidi(m, 0.35);
+            piscarNoDisco('chord-wheel', notasDoAcorde[i]);
+        });
+    });
+});

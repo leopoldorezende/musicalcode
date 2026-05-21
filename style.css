@@ -259,3 +259,80 @@
     #chord-wheel, #chord-wheel circle {
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
+    /* ========================================= */
+/* ESTILOS DOS BOTÕES DE ÁUDIO               */
+/* ========================================= */
+
+.btn-play-round {
+  width: 46px; 
+  height: 46px; 
+  border-radius: 50%;
+  background: #128c7e; 
+  border: none; 
+  outline: none;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  cursor: pointer; 
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: background 0.2s, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 10px auto; 
+  padding-left: 4px; /* Compensa visualmente o triângulo */
+}
+.btn-play-round:hover { 
+  background: #0f7a6d; 
+  transform: scale(1.08); 
+}
+.btn-play-round:active { 
+  transform: scale(0.95); 
+}
+
+/* Botões do miolo dos discos (SVG) */
+.play-svg-group {
+  cursor: pointer;
+  outline: none;
+}
+.play-svg-group circle {
+  transition: fill 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Centraliza a escala nativamente no SVG pelo grupo de translate */
+}
+.play-svg-group:hover circle {
+  fill: #0f7a6d;
+  transform: scale(1.08);
+}
+.play-svg-group:active circle {
+  transform: scale(0.95);
+} 
+
+/* ========================================= */
+/* EFEITO FLASH DAS NOTAS (BRILHO)           */
+/* ========================================= */
+@keyframes noteFlash {
+  0% {
+    fill: #ffffff !important;
+    filter: drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 16px #f1c40f);
+  }
+  100% {
+    filter: none;
+  }
+}
+
+.glowing-note {
+  animation: noteFlash 0.5s ease-out forwards;
+}
+
+/* Para o texto grande em HTML brilhar também */
+.glowing-html {
+  animation: textFlash 0.5s ease-out forwards;
+}
+@keyframes textFlash {
+  0% {
+    color: #f1c40f;
+    text-shadow: 0 0 8px #ffffff, 0 0 16px #f1c40f;
+  }
+  100% {
+    color: inherit;
+    text-shadow: none;
+  }
+}

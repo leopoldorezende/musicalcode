@@ -34,9 +34,13 @@
        <small style="margin: 10px 0;">A Tônica define o 'Tom' ou a 'Tonalidade' que é a nota de referência</small>
 <div class="panel">
     <h2>Notas</h2>
-    <div class="disc-section">
-            
+    <div class="disc-section" style="position: relative;">
             <h3 class="key-slider-label">Cifra: <span id="notaLabel2" class="nota-destaque">C</span></h3>
+            
+            <button id="btn-play-nota" class="btn-play-round" title="Ouvir Nota">
+              <svg width="18" height="18" viewBox="0 0 16 16"><path d="M4,2 L14,8 L4,14 Z" fill="white"/></svg>
+            </button>
+
             <div id="nota-info-extra" class="info-extra-section" style="display: none;"></div>
         </div><small style="margin-top: 16px;">Existem 12 notas musicais<br />7 notas naturais e 5 acidentes</small>
  
@@ -44,64 +48,62 @@
 
 <div class="panel">
     <h2>Acidentes</h2>
-    <div class="disc-section" style="overflow: hidden; height: 190px;">
-    <div class="semicircle-section">
-      <div class="key-wheel-container">
-        <svg id="key-wheel-svg" width="400" height="240" viewBox="0 0 400 240"
-            style="display:block; overflow:visible; margin: 0 auto;">
-          <defs>
-            <clipPath id="semi-clip">
-              <rect x="0" y="0" width="400" height="210"/>
-            </clipPath>
-            <mask id="arc-mask">
-              <rect x="0" y="0" width="400" height="240" fill="white"/>
-              <circle id="win-mask-left"  cx="125" cy="80" r="35" fill="black"/>
-              <circle id="win-mask-mid"   cx="200" cy="60" r="35" fill="black"/>
-              <circle id="win-mask-right" cx="275" cy="80" r="35" fill="black"/>
-            </mask>
-          </defs>
+    
+    <div style="position: relative; margin-bottom: 32px;">
+        
+        <div class="disc-section" style="overflow: hidden; height: 190px;">
+            <div class="semicircle-section">
+                <div class="key-wheel-container">
+                    <svg id="key-wheel-svg" width="400" height="240" viewBox="0 0 400 240"
+                        style="display:block; overflow:visible; margin: 0 auto;">
+                      <defs>
+                        <clipPath id="semi-clip">
+                          <rect x="0" y="0" width="400" height="210"/>
+                        </clipPath>
+                        <mask id="arc-mask">
+                          <rect x="0" y="0" width="400" height="240" fill="white"/>
+                          <circle id="win-mask-left"  cx="125" cy="80" r="35" fill="black"/>
+                          <circle id="win-mask-mid"   cx="200" cy="60" r="35" fill="black"/>
+                          <circle id="win-mask-right" cx="275" cy="80" r="35" fill="black"/>
+                        </mask>
+                      </defs>
 
-          <g clip-path="url(#semi-clip)">
-            <g id="key-disc-group"
-              style="transition: transform 2s cubic-bezier(0.4,0,0.2,1);
-                      transform-origin: 200px 210px;">
-              <circle cx="200" cy="210" r="185" fill="#f4f0eb" fill-opacity="0.55"/>
-              <g id="key-disc-notes"
-                font-family="'IBM Plex Mono',monospace" font-size="13"
-                font-weight="700" text-anchor="middle" dominant-baseline="central"
-                fill="#1a1a1a">
-              </g>
-            </g>
-          </g>
+                      <g clip-path="url(#semi-clip)">
+                        <g id="key-disc-group"
+                          style="transition: transform 2s cubic-bezier(0.4,0,0.2,1); transform-origin: 200px 210px;">
+                          <circle cx="200" cy="210" r="185" fill="#f4f0eb" fill-opacity="0.55"/>
+                          <g id="key-disc-notes" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#1a1a1a"></g>
+                        </g>
+                      </g>
 
-          <path d="M 10 210 A 190 190 0 0 1 390 210 Z"
-                fill="#c8c8c8" fill-opacity="0.82"
-                mask="url(#arc-mask)"/>
+                      <path d="M 10 210 A 190 190 0 0 1 390 210 Z" fill="#c8c8c8" fill-opacity="0.82" mask="url(#arc-mask)"/>
 
-<text id="label-bemol" x="115" y="135" font-family="'IBM Plex Mono',monospace" font-size="12"
-      font-weight="700" text-anchor="middle" fill="#075e54" style="transition: opacity 0.4s ease;">♭ Bemol</text>
-<text x="200" y="115" font-family="'IBM Plex Mono',monospace" font-size="12"
-      font-weight="700" text-anchor="middle" fill="#075e54">Natural</text>
-<text id="label-sustenido" x="285" y="135" font-family="'IBM Plex Mono',monospace" font-size="12"
-      font-weight="700" text-anchor="middle" fill="#075e54" style="transition: opacity 0.4s ease;">♯ Sustenido</text>
+                      <text id="label-bemol" x="115" y="135" font-family="'IBM Plex Mono',monospace" font-size="12" font-weight="700" text-anchor="middle" fill="#075e54" style="transition: opacity 0.4s ease;">♭ Bemol</text>
+                      <text x="200" y="115" font-family="'IBM Plex Mono',monospace" font-size="12" font-weight="700" text-anchor="middle" fill="#075e54">Natural</text>
+                      <text id="label-sustenido" x="285" y="135" font-family="'IBM Plex Mono',monospace" font-size="12" font-weight="700" text-anchor="middle" fill="#075e54" style="transition: opacity 0.4s ease;">♯ Sustenido</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
 
-        </svg>
-      </div>
-      </div>
-      
+        <button id="btn-play-acidentes" class="btn-play-round" style="position: absolute; bottom: -23px; left: 50%; margin: 0 0 0 -23px; z-index: 10;" title="Ouvir Acidentes">
+            <svg width="18" height="18" viewBox="0 0 16 16"><path d="M4,2 L14,8 L4,14 Z" fill="white"/></svg>
+        </button>
+
     </div>
      
-
     <div class="acidentes-info"><b>Em relação à nota natural:</b><br /><span class="big">♭</span>  está há 1 semi-tom abaixo<br /><span class="big">♯</span>  está há 1 semi-tom acima</div>
     <small style="margin-top: 16px;"> Há também <span class="big">♯♯</span> duplo-sustenido e <span class="big">♭♭</span> duplo-bemol</small>
-  </div>
+</div>
   
 
   <div class="panel">
     <h2>Intervalos</h2>
     <div class="section-gap">
 
+
         <div class="disc-section" style="margin-top: 16px;">
+        <small style="margin-top: 0px;">Compreendemos a música a partir dos intervalos entre as notas e não pelas notas em si.</small>
           <svg id="interval-wheel" width="240" height="240" viewBox="0 0 240 240">
             <defs>
               <mask id="interval-hole-mask">
@@ -126,7 +128,11 @@
                style="transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); transform-origin: 120px 120px;">
               <circle cx="120" cy="45" r="16" fill="none" stroke="#128c7e" stroke-width="4"/>
             </g>
-            <circle cx="120" cy="120" r="4" fill="#222"/>
+            
+            <g id="btn-play-intervalos" class="play-svg-group" transform="translate(120, 120)">
+              <circle r="22" fill="#128c7e"/>
+              <path d="M-5,-7 L9,0 L-5,7 Z" fill="white" style="pointer-events: none;"/>
+            </g>
           </svg>
 
       <div class="control-group">
@@ -134,7 +140,8 @@
         <input type="range" id="reguaSlider" min="0" max="12" value="0" style="--val:0%;">
       </div>
        <small>T = Tom &nbsp;&nbsp; ST = Semi-tom</small>
-        </div><small style="margin-top: 0px;">Uma oitava é a mesma nota mais aguda e os intervalos continuam em 9ª, 10ª, 11ª, etc.</small>
+        </div>
+        <small style="margin-top: 0px;">Uma oitava é a mesma nota mais aguda e os intervalos continuam em 9ª, 10ª, 11ª, etc.</small>
     </div>
   </div>
 
@@ -164,7 +171,11 @@
             <circle cx="120" cy="120" r="107" fill="#b0b0b0" fill-opacity="0.75"
                     mask="url(#hole-mask)"/>
             <circle cx="120" cy="45" r="16" fill="none" stroke="#222" stroke-width="4"/>
-            <circle cx="120" cy="120" r="4" fill="#222"/>
+          </g>
+
+          <g id="btn-play-escalas" class="play-svg-group" transform="translate(120, 120)">
+            <circle r="22" fill="#128c7e"/>
+            <path d="M-5,-7 L9,0 L-5,7 Z" fill="white" style="pointer-events: none;"/>
           </g>
         </svg>
 
@@ -217,7 +228,11 @@
             <circle cx="90" cy="90" r="75" fill="#b0b0b0" fill-opacity="0.75"
                     mask="url(#chord-hole-mask)"/>
             <circle cx="90" cy="35" r="16" fill="none" stroke="#222" stroke-width="3"/>
-            <circle cx="90" cy="90" r="4" fill="#222"/>
+          </g>
+
+          <g id="btn-play-acordes" class="play-svg-group" transform="translate(90, 90)">
+            <circle r="22" fill="#128c7e"/>
+            <path d="M-5,-7 L9,0 L-5,7 Z" fill="white" style="pointer-events: none;"/>
           </g>
         </svg>
 
